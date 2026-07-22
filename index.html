@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  
   <style>
     body { font-family: 'Segoe UI', system-ui, sans-serif; }
     .tabla-scroll { overflow-x: auto; }
@@ -15,49 +14,48 @@
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-12">
-
   <div class="max-w-4xl mx-auto p-4 sm:p-6">
-
     <div class="text-center mb-8">
       <h1 class="text-3xl sm:text-4xl font-bold text-blue-700">📊 Registro de Ventas</h1>
-      <p class="text-gray-600"></p>
+      <p class="text-gray-600">Datos guardados automáticamente</p>
     </div>
 
     <!-- Formulario -->
     <div class="bg-white rounded-3xl shadow-lg p-5 sm:p-6 mb-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="lg:col-span-2">
           <label class="block text-sm font-medium text-gray-700 mb-1">Producto</label>
-          <select id="producto" 
-                  class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <select id="producto" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="">-- Selecciona un producto --</option>
           </select>
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Precio (L)</label>
-          <input id="precio" type="number" step="0.01" readonly
-                 class="w-full px-5 py-4 border border-gray-300 rounded-2xl bg-gray-50">
+          <input id="precio" type="number" step="0.01" readonly class="w-full px-5 py-4 border border-gray-300 rounded-2xl bg-gray-50">
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad</label>
-          <input id="cantidad" type="number" min="1" value="1"
-                 class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input id="cantidad" type="number" min="1" value="1" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
-
-        <div class="lg:col-span-2">
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Envío (L)</label>
+          <input id="envio" type="number" step="0.01" value="0" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        
+        <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Pago</label>
-          <select id="tipoPago" 
-                  class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <select id="pago" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="Efectivo">Efectivo</option>
             <option value="Tarjeta">Tarjeta</option>
+            <option value="Transferencia">Transferencia</option>
           </select>
         </div>
       </div>
-
-      <button onclick="agregarProducto()" 
-              class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-5 rounded-3xl text-lg shadow-md active:scale-95 transition-all">
+      
+      <button onclick="agregarProducto()" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-5 rounded-3xl text-lg shadow-md active:scale-95 transition-all">
         <i class="fas fa-plus"></i> Agregar Producto
       </button>
     </div>
@@ -68,7 +66,6 @@
         <h2 class="font-semibold text-lg">Productos Vendidos</h2>
         <span id="total-items" class="text-sm text-gray-500">0 productos</span>
       </div>
-
       <div class="tabla-scroll">
         <table class="w-full min-w-[700px]">
           <thead class="bg-gray-50 sticky top-0">
@@ -76,7 +73,8 @@
               <th class="text-left px-5 py-4 font-medium text-gray-600">Producto</th>
               <th class="text-right px-5 py-4 font-medium text-gray-600">Precio</th>
               <th class="text-right px-5 py-4 font-medium text-gray-600">Cant.</th>
-              <th class="text-center px-5 py-4 font-medium text-gray-600">Pago</th>
+              <th class="text-right px-5 py-4 font-medium text-gray-600">Envío</th>
+              <th class="text-right px-5 py-4 font-medium text-gray-600">Pago</th>
               <th class="text-right px-5 py-4 font-medium text-gray-600">Subtotal</th>
               <th class="w-12"></th>
             </tr>
@@ -86,31 +84,26 @@
       </div>
     </div>
 
-    <!-- Total + Fecha -->
+    <!-- Total + Desglose -->
     <div class="mt-8 bg-white rounded-3xl shadow-lg p-6 sm:p-8" id="area-captura">
       <div class="text-center mb-6">
         <p class="text-sm text-gray-500" id="fecha-actual"></p>
       </div>
-      
+      <div id="desglose-total" class="space-y-3 text-lg"></div>
+      <div class="border-t border-gray-200 my-6"></div>
       <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <span class="text-xl font-semibold text-gray-700">Total General:</span>
-        <span id="total-general" class="text-3xl sm:text-4xl font-bold text-green-600">L 0.00</span>
+        <span class="text-2xl font-bold text-gray-800">TOTAL GENERAL</span>
+        <span id="total-general" class="text-4xl font-bold text-green-600">L 0.00</span>
       </div>
-
       <div class="grid grid-cols-2 gap-4 mt-10">
-        <button onclick="calcularTotal()" 
-                class="bg-green-600 hover:bg-green-700 text-white py-5 rounded-3xl font-semibold text-lg active:scale-95 transition-all">
+        <button onclick="calcularTotal()" class="bg-green-600 hover:bg-green-700 text-white py-5 rounded-3xl font-semibold text-lg active:scale-95 transition-all">
           <i class="fas fa-calculator"></i> Calcular Total
         </button>
-        
-        <button onclick="guardarCaptura()" 
-                class="bg-purple-600 hover:bg-purple-700 text-white py-5 rounded-3xl font-semibold text-lg active:scale-95 transition-all">
+        <button onclick="guardarCaptura()" class="bg-purple-600 hover:bg-purple-700 text-white py-5 rounded-3xl font-semibold text-lg active:scale-95 transition-all">
           <i class="fas fa-camera"></i> Guardar Captura
         </button>
       </div>
-
-      <button onclick="limpiarTodo()" 
-              class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-3xl text-lg active:scale-95 transition-all">
+      <button onclick="limpiarTodo()" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-3xl text-lg active:scale-95 transition-all">
         <i class="fas fa-trash"></i> Limpiar Todo
       </button>
     </div>
@@ -118,27 +111,15 @@
 
   <script>
     const productos = {
-      "Chuleta normal c/tajadas": 105,
-      "Chuleta Barbacoa c/tajadas": 140,
-      "Chuleta normal c/papas": 110,
-      "Chuleta Barbacoa c/papas": 145,
-      "Pierna con tajadas": 95,
-      "Pierna con papas": 100,
-      "Pechuga con tajadas": 110,
-      "Pechuga con papas": 115,
-      "Medio pollo": 120,
-      "Pollo entero": 230,
-      "Hamburguesa normal": 110,
-      "Hamburguesa doble": 140,
-      "Alitas de 6": 145,
-      "Alitas de 8": 185,
-      "Alitas de 10": 215,
-      "Alitas de 12": 255,
-      "Tacos de pollo": 75,
-      "Tajada pequeña": 30,
-      "Tajada grande": 60,
-      "Papa pequeña": 35,
-      "Papa grande": 70
+      "Chuleta normal c/tajadas": 105, "Chuleta Barbacoa c/tajadas": 140,
+      "Chuleta normal c/papas": 110, "Chuleta Barbacoa c/papas": 145,
+      "Pierna con tajadas": 95, "Pierna con papas": 100,
+      "Pechuga con tajadas": 110, "Pechuga con papas": 115,
+      "Medio pollo": 120, "Pollo entero": 230,
+      "Hamburguesa normal": 110, "Hamburguesa doble": 140,
+      "Alitas de 6": 145, "Alitas de 8": 185, "Alitas de 10": 215, "Alitas de 12": 255,
+      "Tacos de pollo": 75, "Tajada pequeña": 30, "Tajada grande": 60,
+      "Papa pequeña": 35, "Papa grande": 70
     };
 
     let ventas = [];
@@ -146,7 +127,6 @@
     function cargarProductos() {
       const select = document.getElementById('producto');
       select.innerHTML = '<option value="">-- Selecciona un producto --</option>';
-      
       Object.keys(productos).forEach(prod => {
         const option = document.createElement('option');
         option.value = prod;
@@ -156,12 +136,7 @@
     }
 
     document.getElementById('producto').addEventListener('change', function() {
-      const precioInput = document.getElementById('precio');
-      if (this.value) {
-        precioInput.value = productos[this.value];
-      } else {
-        precioInput.value = '';
-      }
+      document.getElementById('precio').value = this.value ? productos[this.value] : '';
     });
 
     function cargarDatos() {
@@ -177,27 +152,35 @@
     }
 
     function agregarProducto() {
-      const producto = document.getElementById('producto').value;
+      const productoSelect = document.getElementById('producto');
+      const producto = productoSelect.value;
       const precio = parseFloat(document.getElementById('precio').value);
       const cantidad = parseInt(document.getElementById('cantidad').value);
-      const tipoPago = document.getElementById('tipoPago').value;
+      const envio = parseFloat(document.getElementById('envio').value) || 0;
+      const tipoPago = document.getElementById('pago').value;
 
       if (!producto || isNaN(precio) || isNaN(cantidad) || cantidad <= 0) {
         alert("⚠️ Selecciona un producto y cantidad válida");
         return;
       }
 
-      ventas.push({ 
-        id: Date.now(), 
-        producto, 
-        precio, 
-        cantidad, 
-        tipoPago 
+      ventas.push({
+        id: Date.now(),
+        producto,
+        precio,
+        cantidad,
+        envio,
+        pago: tipoPago
       });
 
       renderTabla();
       guardarDatos();
+
+      // Resetear campos para el siguiente producto
       document.getElementById('cantidad').value = 1;
+      document.getElementById('envio').value = 0;
+      productoSelect.value = '';
+      document.getElementById('precio').value = '';
     }
 
     function renderTabla() {
@@ -205,17 +188,14 @@
       tbody.innerHTML = '';
 
       ventas.forEach((item, index) => {
-        const subtotal = item.precio * item.cantidad;
+        const subtotal = (item.precio * item.cantidad) + (item.envio || 0);
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="px-5 py-4">${item.producto}</td>
           <td class="px-5 py-4 text-right">L ${item.precio.toFixed(2)}</td>
           <td class="px-5 py-4 text-right font-medium">${item.cantidad}</td>
-          <td class="px-5 py-4 text-center">
-            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium ${item.tipoPago === 'Efectivo' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}">
-              ${item.tipoPago}
-            </span>
-          </td>
+          <td class="px-5 py-4 text-right text-orange-600">L ${(item.envio || 0).toFixed(2)}</td>
+          <td class="px-5 py-4 text-right">${item.pago}</td>
           <td class="px-5 py-4 text-right font-semibold text-green-600">L ${subtotal.toFixed(2)}</td>
           <td class="px-3 py-4 text-center">
             <button onclick="eliminarProducto(${index})" class="text-red-500 hover:text-red-700 p-2">
@@ -243,12 +223,36 @@
         return;
       }
 
-      const total = ventas.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-      document.getElementById('total-general').textContent = `L ${total.toFixed(2)}`;
-      
-      const fecha = new Date().toLocaleDateString('es-HN', { 
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+      let efectivo = 0, tarjeta = 0, transferencia = 0;
+      let totalEnvios = 0;
+
+      ventas.forEach(item => {
+        const subtotalProducto = item.precio * item.cantidad;
+        const envioItem = item.envio || 0;
+        totalEnvios += envioItem;
+
+        const subtotalConEnvio = subtotalProducto + envioItem;
+
+        if (item.pago === "Efectivo") efectivo += subtotalConEnvio;
+        else if (item.pago === "Tarjeta") tarjeta += subtotalConEnvio;
+        else if (item.pago === "Transferencia") transferencia += subtotalConEnvio;
       });
+
+      const granTotal = efectivo + tarjeta + transferencia;
+
+      const desgloseHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div><span class="font-medium">Efectivo:</span> <span class="float-right font-semibold">L ${efectivo.toFixed(2)}</span></div>
+          <div><span class="font-medium">Tarjeta:</span> <span class="float-right font-semibold">L ${tarjeta.toFixed(2)}</span></div>
+          <div><span class="font-medium">Transferencia:</span> <span class="float-right font-semibold">L ${transferencia.toFixed(2)}</span></div>
+          <div><span class="font-medium">Total Envíos:</span> <span class="float-right font-semibold text-orange-600">L ${totalEnvios.toFixed(2)}</span></div>
+        </div>
+      `;
+
+      document.getElementById('desglose-total').innerHTML = desgloseHTML;
+      document.getElementById('total-general').textContent = `L ${granTotal.toFixed(2)}`;
+
+      const fecha = new Date().toLocaleDateString('es-HN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       document.getElementById('fecha-actual').textContent = fecha;
     }
 
@@ -257,11 +261,8 @@
         alert("Primero calcula el total");
         return;
       }
-
-      const elemento = document.getElementById('area-captura');
-      
       try {
-        const canvas = await html2canvas(elemento, { scale: 2 });
+        const canvas = await html2canvas(document.getElementById('area-captura'), { scale: 2 });
         const link = document.createElement('a');
         link.download = `Ventas_${new Date().toISOString().slice(0,10)}.png`;
         link.href = canvas.toDataURL('image/png');
@@ -277,8 +278,13 @@
         ventas = [];
         localStorage.removeItem('ventas');
         renderTabla();
+        document.getElementById('desglose-total').innerHTML = '';
         document.getElementById('total-general').textContent = 'L 0.00';
         document.getElementById('fecha-actual').textContent = '';
+        document.getElementById('envio').value = 0;
+        document.getElementById('producto').value = '';
+        document.getElementById('precio').value = '';
+        document.getElementById('cantidad').value = 1;
       }
     }
 
