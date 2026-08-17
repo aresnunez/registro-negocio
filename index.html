@@ -16,10 +16,9 @@
 <body class="bg-gray-100 min-h-screen pb-12">
   <div class="max-w-4xl mx-auto p-4 sm:p-6">
     <div class="text-center mb-8">
-      <h1 class="text-3xl sm:text-4xl font-bold text-blue-700">📊 Registro de Ventas</h1>
-      <p class="text-gray-600">Datos guardados automáticamente</p>
+      <h1 class="text-3xl sm:text-4xl font-bold text-blue-700"> Registro de Ventas</h1>
+      <p class="text-gray-600"></p>
     </div>
-
     <!-- Formulario -->
     <div class="bg-white rounded-3xl shadow-lg p-5 sm:p-6 mb-8">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -29,22 +28,22 @@
             <option value="">-- Selecciona un producto --</option>
           </select>
         </div>
-        
+       
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Precio (L)</label>
-          <input id="precio" type="number" step="0.01" readonly class="w-full px-5 py-4 border border-gray-300 rounded-2xl bg-gray-50">
+          <input id="precio" type="number" step="0.01" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
-        
+       
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad</label>
           <input id="cantidad" type="number" min="1" value="1" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
-        
+       
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Envío (L)</label>
           <input id="envio" type="number" step="0.01" value="0" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
-        
+       
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Pago</label>
           <select id="pago" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -54,12 +53,11 @@
           </select>
         </div>
       </div>
-      
+     
       <button onclick="agregarProducto()" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-5 rounded-3xl text-lg shadow-md active:scale-95 transition-all">
         <i class="fas fa-plus"></i> Agregar Producto
       </button>
     </div>
-
     <!-- Tabla -->
     <div class="bg-white rounded-3xl shadow-lg overflow-hidden">
       <div class="px-5 py-4 bg-gray-50 border-b flex justify-between items-center">
@@ -83,7 +81,6 @@
         </table>
       </div>
     </div>
-
     <!-- Total + Desglose -->
     <div class="mt-8 bg-white rounded-3xl shadow-lg p-6 sm:p-8" id="area-captura">
       <div class="text-center mb-6">
@@ -108,7 +105,6 @@
       </button>
     </div>
   </div>
-
   <script>
     const productos = {
       "Chuleta normal c/tajadas": 105, "Chuleta Barbacoa c/tajadas": 140,
@@ -117,13 +113,11 @@
       "Pechuga con tajadas": 110, "Pechuga con papas": 115,
       "Medio pollo": 120, "Pollo entero": 230,
       "Hamburguesa normal": 110, "Hamburguesa doble": 140,
-      "Alitas de 6": 145, "Alitas de 8": 185, "Alitas de 10": 215, "Alitas de 12": 255,
+      "Alitas de 6": 145, "Alitas de 8": 185, "Alitas de 10": 215, "Alitas de 12": 260,
       "Tacos de pollo": 75, "Tajada pequeña": 30, "Tajada grande": 60,
       "Papa pequeña": 35, "Papa grande": 70
     };
-
     let ventas = [];
-
     function cargarProductos() {
       const select = document.getElementById('producto');
       select.innerHTML = '<option value="">-- Selecciona un producto --</option>';
@@ -134,11 +128,9 @@
         select.appendChild(option);
       });
     }
-
     document.getElementById('producto').addEventListener('change', function() {
       document.getElementById('precio').value = this.value ? productos[this.value] : '';
     });
-
     function cargarDatos() {
       const datosGuardados = localStorage.getItem('ventas');
       if (datosGuardados) {
@@ -146,11 +138,9 @@
         renderTabla();
       }
     }
-
     function guardarDatos() {
       localStorage.setItem('ventas', JSON.stringify(ventas));
     }
-
     function agregarProducto() {
       const productoSelect = document.getElementById('producto');
       const producto = productoSelect.value;
@@ -158,12 +148,10 @@
       const cantidad = parseInt(document.getElementById('cantidad').value);
       const envio = parseFloat(document.getElementById('envio').value) || 0;
       const tipoPago = document.getElementById('pago').value;
-
       if (!producto || isNaN(precio) || isNaN(cantidad) || cantidad <= 0) {
         alert("⚠️ Selecciona un producto y cantidad válida");
         return;
       }
-
       ventas.push({
         id: Date.now(),
         producto,
@@ -172,21 +160,17 @@
         envio,
         pago: tipoPago
       });
-
       renderTabla();
       guardarDatos();
-
       // Resetear campos para el siguiente producto
       document.getElementById('cantidad').value = 1;
       document.getElementById('envio').value = 0;
       productoSelect.value = '';
       document.getElementById('precio').value = '';
     }
-
     function renderTabla() {
       const tbody = document.getElementById('tabla-ventas');
       tbody.innerHTML = '';
-
       ventas.forEach((item, index) => {
         const subtotal = (item.precio * item.cantidad) + (item.envio || 0);
         const tr = document.createElement('tr');
@@ -205,10 +189,8 @@
         `;
         tbody.appendChild(tr);
       });
-
       document.getElementById('total-items').textContent = `${ventas.length} productos`;
     }
-
     function eliminarProducto(index) {
       if (confirm("¿Eliminar este producto?")) {
         ventas.splice(index, 1);
@@ -216,30 +198,23 @@
         guardarDatos();
       }
     }
-
     function calcularTotal() {
       if (ventas.length === 0) {
         alert("No hay ventas registradas");
         return;
       }
-
       let efectivo = 0, tarjeta = 0, transferencia = 0;
       let totalEnvios = 0;
-
       ventas.forEach(item => {
         const subtotalProducto = item.precio * item.cantidad;
         const envioItem = item.envio || 0;
         totalEnvios += envioItem;
-
         const subtotalConEnvio = subtotalProducto + envioItem;
-
         if (item.pago === "Efectivo") efectivo += subtotalConEnvio;
         else if (item.pago === "Tarjeta") tarjeta += subtotalConEnvio;
         else if (item.pago === "Transferencia") transferencia += subtotalConEnvio;
       });
-
       const granTotal = efectivo + tarjeta + transferencia;
-
       const desgloseHTML = `
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div><span class="font-medium">Efectivo:</span> <span class="float-right font-semibold">L ${efectivo.toFixed(2)}</span></div>
@@ -248,14 +223,11 @@
           <div><span class="font-medium">Total Envíos:</span> <span class="float-right font-semibold text-orange-600">L ${totalEnvios.toFixed(2)}</span></div>
         </div>
       `;
-
       document.getElementById('desglose-total').innerHTML = desgloseHTML;
       document.getElementById('total-general').textContent = `L ${granTotal.toFixed(2)}`;
-
       const fecha = new Date().toLocaleDateString('es-HN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       document.getElementById('fecha-actual').textContent = fecha;
     }
-
     async function guardarCaptura() {
       if (ventas.length === 0) {
         alert("Primero calcula el total");
@@ -272,7 +244,6 @@
         alert("Error al guardar la captura");
       }
     }
-
     function limpiarTodo() {
       if (confirm("¿Borrar TODAS las ventas?")) {
         ventas = [];
@@ -287,7 +258,6 @@
         document.getElementById('cantidad').value = 1;
       }
     }
-
     window.onload = () => {
       cargarProductos();
       cargarDatos();
