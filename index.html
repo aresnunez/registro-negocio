@@ -11,6 +11,7 @@
     body { font-family: 'Segoe UI', system-ui, sans-serif; }
     .tabla-scroll { overflow-x: auto; }
     input, select, button { font-size: 1.1rem; }
+    .fila-pendiente { background-color: #fff7ed; }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-12">
@@ -50,6 +51,7 @@
             <option value="Efectivo">Efectivo</option>
             <option value="Tarjeta">Tarjeta</option>
             <option value="Transferencia">Transferencia</option>
+            <option value="Pendiente">Pendiente</option>
           </select>
         </div>
       </div>
@@ -107,15 +109,16 @@
   </div>
   <script>
     const productos = {
-      "Chuleta normal c/tajadas": 105, "Chuleta Barbacoa c/tajadas": 140,
-      "Chuleta normal c/papas": 110, "Chuleta Barbacoa c/papas": 145,
-      "Pierna con tajadas": 95, "Pierna con papas": 100,
-      "Pechuga con tajadas": 110, "Pechuga con papas": 115,
-      "Medio pollo": 120, "Pollo entero": 230,
+      "Chuleta normal c/tajadas": 110, "Chuleta Barbacoa c/tajadas": 140,
+      "Chuleta normal c/papas": 115, "Chuleta Barbacoa c/papas": 145,
+      "Pierna con tajadas": 100, "Pierna con papas": 105,
+      "Pechuga con tajadas": 115, "Pechuga con papas": 120,
+      "Medio pollo": 120, "Pollo entero": 235,
       "Hamburguesa normal": 110, "Hamburguesa doble": 140,
-      "Alitas de 6": 145, "Alitas de 8": 185, "Alitas de 10": 215, "Alitas de 12": 260,
+      "Alitas de 4": 120, "Alitas de 6": 145, "Alitas de 8": 185, "Alitas de 10": 215, "Alitas de 12": 260,
       "Tacos de pollo": 75, "Tajada pequeña": 30, "Tajada grande": 60,
-      "Papa pequeña": 35, "Papa grande": 70
+      "Papa pequeña": 35, "Papa grande": 70,
+      "Papas preparadas": 100
     };
     let ventas = [];
     function cargarProductos() {
@@ -173,14 +176,16 @@
       tbody.innerHTML = '';
       ventas.forEach((item, index) => {
         const subtotal = (item.precio * item.cantidad) + (item.envio || 0);
+        const esPendiente = item.pago === "Pendiente";
         const tr = document.createElement('tr');
+        if (esPendiente) tr.classList.add('fila-pendiente');
         tr.innerHTML = `
-          <td class="px-5 py-4">${item.producto}</td>
+          <td class="px-5 py-4 ${esPendiente ? 'text-orange-700 font-medium' : ''}">${item.producto}</td>
           <td class="px-5 py-4 text-right">L ${item.precio.toFixed(2)}</td>
           <td class="px-5 py-4 text-right font-medium">${item.cantidad}</td>
           <td class="px-5 py-4 text-right text-orange-600">L ${(item.envio || 0).toFixed(2)}</td>
-          <td class="px-5 py-4 text-right">${item.pago}</td>
-          <td class="px-5 py-4 text-right font-semibold text-green-600">L ${subtotal.toFixed(2)}</td>
+          <td class="px-5 py-4 text-right ${esPendiente ? 'text-orange-600 font-semibold' : ''}">${item.pago}</td>
+          <td class="px-5 py-4 text-right font-semibold ${esPendiente ? 'text-orange-600' : 'text-green-600'}">L ${subtotal.toFixed(2)}</td>
           <td class="px-3 py-4 text-center">
             <button onclick="eliminarProducto(${index})" class="text-red-500 hover:text-red-700 p-2">
               <i class="fas fa-trash text-xl"></i>
@@ -205,17 +210,27 @@
       }
       let efectivo = 0, tarjeta = 0, transferencia = 0;
       let totalEnvios = 0;
+      let totalPendiente = 0;
+      let pendientesHTML = '';
       ventas.forEach(item => {
         const subtotalProducto = item.precio * item.cantidad;
         const envioItem = item.envio || 0;
-        totalEnvios += envioItem;
         const subtotalConEnvio = subtotalProducto + envioItem;
-        if (item.pago === "Efectivo") efectivo += subtotalConEnvio;
-        else if (item.pago === "Tarjeta") tarjeta += subtotalConEnvio;
-        else if (item.pago === "Transferencia") transferencia += subtotalConEnvio;
+        if (item.pago === "Pendiente") {
+          totalPendiente += subtotalConEnvio;
+          pendientesHTML += `
+            <div class="text-orange-700 text-sm py-1">
+              • ${item.producto} (x${item.cantidad}) → <strong>Pendiente: L ${subtotalConEnvio.toFixed(2)}</strong>
+            </div>`;
+        } else {
+          totalEnvios += envioItem;
+          if (item.pago === "Efectivo") efectivo += subtotalConEnvio;
+          else if (item.pago === "Tarjeta") tarjeta += subtotalConEnvio;
+          else if (item.pago === "Transferencia") transferencia += subtotalConEnvio;
+        }
       });
       const granTotal = efectivo + tarjeta + transferencia;
-      const desgloseHTML = `
+      let desgloseHTML = `
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div><span class="font-medium">Efectivo:</span> <span class="float-right font-semibold">L ${efectivo.toFixed(2)}</span></div>
           <div><span class="font-medium">Tarjeta:</span> <span class="float-right font-semibold">L ${tarjeta.toFixed(2)}</span></div>
@@ -223,6 +238,19 @@
           <div><span class="font-medium">Total Envíos:</span> <span class="float-right font-semibold text-orange-600">L ${totalEnvios.toFixed(2)}</span></div>
         </div>
       `;
+      if (totalPendiente > 0) {
+        desgloseHTML += `
+          <div class="mt-5 p-4 bg-orange-50 border border-orange-200 rounded-2xl">
+            <div class="font-semibold text-orange-700 mb-2">
+              <i class="fas fa-clock"></i> Pedidos Pendientes:
+            </div>
+            ${pendientesHTML}
+            <div class="mt-3 pt-2 border-t border-orange-200 font-bold text-orange-800">
+              Total Pendiente: L ${totalPendiente.toFixed(2)}
+            </div>
+          </div>
+        `;
+      }
       document.getElementById('desglose-total').innerHTML = desgloseHTML;
       document.getElementById('total-general').textContent = `L ${granTotal.toFixed(2)}`;
       const fecha = new Date().toLocaleDateString('es-HN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -263,5 +291,7 @@
       cargarDatos();
     };
   </script>
+</body>
+</html>
 </body>
 </html>
